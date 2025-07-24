@@ -1,0 +1,44 @@
+{
+    "GuaranteeTerm":[{
+        "Scope":[{
+            "name":"Scope name",
+            "Agent": "Agent name"
+        }],
+        "QualifyingCondition":[],
+        "SLO":[{
+            "name": "SLO 1",
+            "BoolExpression": {
+                "type":"Comparison",
+                "QoSMetric": "AVG AUC",
+                "operator": "GREATER",
+                "value": 0.75
+            }
+        }]
+    }],
+    "DerivedQoSMetric":[{
+        "name": "AVG AUC",
+        "description": "description text",
+        "metric_type": "AUC",
+        "unit": "NONE",
+        "uncertainty": 0,
+        "window": 10,
+        "window_unit": "MESSAGE",
+        "aggregation": "AVG",
+        "Provider": "Provider name"
+    }],
+    "Provider": [{
+      "name": "Provider name",
+      "confidence": 0.75,
+      "reputation": 50
+    }],
+    "Agent":[{
+        "name": "Agent name",
+        "description": "description text",
+        "url": "agent_url",
+        "ModelCard": "GPT 4o"
+    }],
+    "ModelCard":[{
+        "name": "GPT 4o",
+        "model_card": "..."
+    }]
+}
