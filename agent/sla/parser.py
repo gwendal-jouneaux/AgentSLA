@@ -35,6 +35,6 @@ if __name__ == '__main__':
         description='Program validating, parsing and instantiating AgentSLA model')
     argparser.add_argument('path', help='Path of the file to parse/validate')
     args = argparser.parse_args()
-    card = parse(args.path)
-    if card is None:
+    sla = parse(args.path)
+    if sla is None:
         sys.exit(1)
