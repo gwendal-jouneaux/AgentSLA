@@ -1,7 +1,9 @@
-from metamodel import QoSMetricType, QoSMetric, QoSMetricUnit, ModelCard, Agent, Provider, SLA, WindowUnit, \
+from email.policy import default
+
+from agent.sla.lang.metamodel import QoSMetricType, QoSMetric, QoSMetricUnit, Provider, SLA, WindowUnit, \
     AggregationFunction, DerivedQoSMetric, QoSDriftMetric, GuaranteeTerm, Scope, QualifyingCondition, SLO, And, Or, \
     Comparison, Operator
-from errors import ErrorMessage, NotInEnum, UndefinedLabel, OutOfBound, NoUnit
+from agent.sla.lang.errors import ErrorMessage, NotInEnum, UndefinedLabel, OutOfBound, NoUnit
 
 
 class SLAVisitor:
@@ -17,22 +19,22 @@ class SLAVisitor:
 
     def visit_SLA(self, struct):
 
-        cards = struct.get("ModelCard")
-        if cards is not None:
-            for card in cards:
-                mcard = ModelCard(card.get("name"), card.get("model_card"))
-                self.model_cards[card.get("name")] = mcard
-
-        agents = struct.get("Agent")
-        if agents is not None:
-            for agent in agents:
-                mc = None
-                if agent.get("ModelCard") is not None and agent.get("ModelCard") not in self.model_cards:
-                    self.errors.append(UndefinedLabel(agent.get("ModelCard"), "ModelCard"))
-                else:
-                    mc = self.model_cards[agent.get("ModelCard")]
-                ag = Agent(agent.get("description"), agent.get("url"), agent.get("name"), mc)
-                self.agents[agent.get("name")] = ag
+        # cards = struct.get("ModelCard")
+        # if cards is not None:
+        #     for card in cards:
+        #         mcard = ModelCard(card.get("name"), card.get("model_card"))
+        #         self.model_cards[card.get("name")] = mcard
+        #
+        # agents = struct.get("Agent")
+        # if agents is not None:
+        #     for agent in agents:
+        #         mc = None
+        #         if agent.get("ModelCard") is not None and agent.get("ModelCard") not in self.model_cards:
+        #             self.errors.append(UndefinedLabel(agent.get("ModelCard"), "ModelCard"))
+        #         else:
+        #             mc = self.model_cards[agent.get("ModelCard")]
+        #         ag = Agent(agent.get("description"), agent.get("url"), agent.get("name"), mc)
+        #         self.agents[agent.get("name")] = ag
 
         providers = struct.get("Provider")
         if providers is not None:
@@ -75,10 +77,11 @@ class SLAVisitor:
         gt = GuaranteeTerm([],[],[])
         scopes = struct.get("Scope")
         for scope in scopes:
-            if scope.get("Agent") not in self.agents:
-                self.errors.append(UndefinedLabel(scope.get("Agent"), "Agent"))
-            else:
-                gt.scope.append(Scope(scope.get("name"), gt, self.agents[scope.get("Agent")]))
+            gt.scope.append(Scope(scope.get("name"), gt, scope.get("tasks", [])))
+            # if scope.get("Agent") not in self.agents:
+            #     self.errors.append(UndefinedLabel(scope.get("Agent"), "Agent"))
+            # else:
+            #     gt.scope.append(Scope(scope.get("name"), gt, self.agents[scope.get("Agent")]))
 
         conditions = struct.get("QualifyingCondition")
         if conditions is not None:

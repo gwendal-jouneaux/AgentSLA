@@ -1,4 +1,3 @@
-from datetime import datetime, date, time
 from enum import Enum
 
 ############################################
@@ -107,27 +106,27 @@ class Provider:
     def confidence(self, confidence: float):
         self.__confidence = confidence
 
-class ModelCard:
-
-    def __init__(self, name: str, model_card: str):
-        self.__name = name
-        self.__model_card = model_card
-        
-    @property
-    def model_card(self) -> str:
-        return self.__model_card
-
-    @model_card.setter
-    def model_card(self, model_card: str):
-        self.__model_card = model_card
-
-    @property
-    def name(self) -> str:
-        return self.__name
-
-    @name.setter
-    def name(self, name: str):
-        self.__name = name
+# class ModelCard:
+#
+#     def __init__(self, name: str, model_card: str):
+#         self.__name = name
+#         self.__model_card = model_card
+#
+#     @property
+#     def model_card(self) -> str:
+#         return self.__model_card
+#
+#     @model_card.setter
+#     def model_card(self, model_card: str):
+#         self.__model_card = model_card
+#
+#     @property
+#     def name(self) -> str:
+#         return self.__name
+#
+#     @name.setter
+#     def name(self, name: str):
+#         self.__name = name
 
 class QoSMetric:
 
@@ -402,52 +401,52 @@ class QualifyingCondition:
         if value is not None:
             value.qualifying_condition.append(self)
 
-class Agent:
-
-    def __init__(self, description: str, url: str, name: str, modelcard: "ModelCard" = None):
-        self.__description = description
-        self.__url = url
-        self.__name = name
-        self.__modelcard = modelcard
-        
-    @property
-    def description(self) -> str:
-        return self.__description
-
-    @description.setter
-    def description(self, description: str):
-        self.__description = description
-
-    @property
-    def url(self) -> str:
-        return self.__url
-
-    @url.setter
-    def url(self, url: str):
-        self.__url = url
-
-    @property
-    def name(self) -> str:
-        return self.__name
-
-    @name.setter
-    def name(self, name: str):
-        self.__name = name
-
-    @property
-    def modelcard(self):
-        return self.__modelcard
-
-    @modelcard.setter
-    def modelcard(self, value):
-        self.__modelcard = value
+# class Agent:
+#
+#     def __init__(self, description: str, url: str, name: str, modelcard: "ModelCard" = None):
+#         self.__description = description
+#         self.__url = url
+#         self.__name = name
+#         self.__modelcard = modelcard
+#
+#     @property
+#     def description(self) -> str:
+#         return self.__description
+#
+#     @description.setter
+#     def description(self, description: str):
+#         self.__description = description
+#
+#     @property
+#     def url(self) -> str:
+#         return self.__url
+#
+#     @url.setter
+#     def url(self, url: str):
+#         self.__url = url
+#
+#     @property
+#     def name(self) -> str:
+#         return self.__name
+#
+#     @name.setter
+#     def name(self, name: str):
+#         self.__name = name
+#
+#     @property
+#     def modelcard(self):
+#         return self.__modelcard
+#
+#     @modelcard.setter
+#     def modelcard(self, value):
+#         self.__modelcard = value
 
 class Scope:
 
-    def __init__(self, name: str, guaranteeterm: "GuaranteeTerm" = None, agent: "Agent" = None):
+    def __init__(self, name: str, guaranteeterm: "GuaranteeTerm" = None, tasks: list[str] = []):
         self.__name = name
         self.__guaranteeterm = guaranteeterm
-        self.__agent = agent
+        self.__tasks = tasks
         
     @property
     def name(self) -> str:
@@ -458,12 +457,12 @@ class Scope:
         self.__name = name
 
     @property
-    def agent(self):
-        return self.__agent
+    def tasks(self):
+        return self.__tasks
 
-    @agent.setter
-    def agent(self, value):
-        self.__agent = value
+    @tasks.setter
+    def tasks(self, value):
+        self.__tasks = value
 
     @property
     def guaranteeterm(self):

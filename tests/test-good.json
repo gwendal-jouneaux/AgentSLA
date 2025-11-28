@@ -2,7 +2,7 @@
     "GuaranteeTerm":[{
         "Scope":[{
             "name":"Scope name",
-            "Agent": "Agent name"
+            "tasks": ["Classification"]
         }],
         "QualifyingCondition":[],
         "SLO":[{
@@ -30,15 +30,5 @@
       "name": "Provider name",
       "confidence": 0.75,
       "reputation": 50
-    }],
-    "Agent":[{
-        "name": "Agent name",
-        "description": "description text",
-        "url": "agent_url",
-        "ModelCard": "GPT 4o"
-    }],
-    "ModelCard":[{
-        "name": "GPT 4o",
-        "model_card": "..."
     }]
 }

@@ -3,11 +3,12 @@ import sys
 import json
 import argparse
 
-from metamodel import SLA
-from visitor import SLAVisitor
+from agent.sla.lang.pretty_printer import SLAPrettyPrinter
+from agent.sla.lang.metamodel import SLA
+from agent.sla.lang.visitor import SLAVisitor
 
 
-def parse(path: str) -> SLA:
+def parse_file(path: str) -> SLA:
     with open(path) as stream:
         try:
             struct = json.loads(stream.read())
@@ -15,6 +16,14 @@ def parse(path: str) -> SLA:
         except json.JSONDecodeError as e:
             print("Invalid JSON syntax:", e)
 
+    return None
+
+def parse_str(content: str) -> SLA:
+    try:
+        struct = json.loads(content)
+        return create_model(struct)
+    except json.JSONDecodeError as e:
+        print("Invalid JSON syntax:", e)
     return None
 
 def create_model(struct) -> SLA:
@@ -35,6 +44,13 @@ if __name__ == '__main__':
         description='Program validating, parsing and instantiating AgentSLA model')
     argparser.add_argument('path', help='Path of the file to parse/validate')
     args = argparser.parse_args()
-    sla = parse(args.path)
+    sla = parse_file(args.path)
+    if sla is None:
+        sys.exit(1)
+
+    json_pp = SLAPrettyPrinter(sla).json()
+    print(json_pp)
+
+    sla = parse_str(json_pp)
     if sla is None:
         sys.exit(1)

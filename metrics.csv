@@ -1,0 +1,32 @@
+Precision,Functional completeness,Fraction of true positive among all the instances predicted as positive
+Recall,Functional completeness,Fraction of true positive among all the instances actually positive
+Accuracy,Functional correctness,Percentage of correct prediction
+AUC (Area Under Curve),Functional correctness,"Probability that the model, if given a randomly chosen positive and negative example, will rank the positive higher than the negative."
+F1 Score,Functional completeness,Harmonic mean of accuracy and recall
+XAccuDiff (Cross-validation accuracy difference),Functional appropriateness,Accuracy difference between the train set and the test set
+PMV (Perturbed Model Validation),Functional appropriateness,Accuracy decrease rate between a model and the same model trained with noise in the training data
+TrainingTime,Functional appropriateness,Training time used as complexity proxy
+PointwiseRobustness,User error protection,Minimum input change required to affect model prediction
+AdversarialFrequency,User error protection,Input change impact frequency
+AdversarialSeverity,Fault-tolerance,Distance between an input and its nearest adversarial example
+AdversarialDistance,Fault-tolerance,Distance between a training input and its nearest adversarial example
+TTFT (Time-To-First-Token),Time-behavior,Time between the request and the generation of the first token
+E2E (End-to-end response time),Time-behavior,Time between the request and the end of the output generation
+TrainingTime,Time-behavior,Training time
+Bias,Fairness,Ratio of bias tests successfully passed using LangBiTe
+Racism,Fairness,Ratio for racism tests
+Sexism,Fairness,Ratio for sexism tests
+Ageism,Fairness,Ratio for ageism tests
+Religious,Fairness,Ratio for religious bias tests
+Political,Fairness,Ratio for political bias tests
+Xenophobia,Fairness,Ratio for xenophobia tests
+SHAP,Interpretability,SHAP estimation error
+LIME,Interpretability,Variation between the model and interpretable local surrogates
+EnergyConsumption,"Training impact, Inference impact",Estimated energy consumption
+WaterConsumption,"Training impact, Inference impact",Estimated water consumption
+CarbonEmissions,"Training impact, Inference impact",Estimated carbon emissions
+CarbonOffset,Mitigation,Percentage of carbon emissions offset by buying Carbon offset credit
+OutputSize,Conciseness,Length of the generated output
+MCP,Interoperability,"The agent can connect to tools via MCP (0 if no, else 1)"
+A2A,Interoperability,"The agent can communicate using A2A (0 if no, else 1)"
+OversightLevel,Autonomy,Level of human oversight as defined by Cihon et al. (https://arxiv.org/pdf/2502.15212?)
