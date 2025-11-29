@@ -1,4 +1,6 @@
-from enum import Enum
+from typing import Type
+
+from aenum import Enum
 
 ############################################
 # Definition of Enumerations
@@ -130,7 +132,7 @@ class Provider:
 
 class QoSMetric:
 
-    def __init__(self, name: str, description: str, metric_type: QoSMetricType, unit: QoSMetricUnit, uncertainty: float, provider: "Provider" = None):
+    def __init__(self, name: str, description: str, metric_type: Type[QoSMetricType], unit: QoSMetricUnit, uncertainty: float, provider: "Provider" = None):
         self.__name = name
         self.__description = description
         self.__metric_type = metric_type
@@ -155,11 +157,11 @@ class QoSMetric:
         self.__name = name
 
     @property
-    def metric_type(self) -> QoSMetricType:
+    def metric_type(self) -> Type[QoSMetricType]:
         return self.__metric_type
 
     @metric_type.setter
-    def metric_type(self, metric_type: QoSMetricType):
+    def metric_type(self, metric_type: Type[QoSMetricType]):
         self.__metric_type = metric_type
 
     @property
@@ -188,7 +190,7 @@ class QoSMetric:
 
 class QoSDriftMetric(QoSMetric):
 
-    def __init__(self, name: str, description: str, metric_type: QoSMetricType, unit: QoSMetricUnit, uncertainty: float, window: int, aggregation: AggregationFunction, window_unit: WindowUnit, provider: "Provider"):
+    def __init__(self, name: str, description: str, metric_type: Type[QoSMetricType], unit: QoSMetricUnit, uncertainty: float, window: int, aggregation: AggregationFunction, window_unit: WindowUnit, provider: "Provider"):
         super().__init__(name, description, metric_type, unit, uncertainty, provider)
         self.__window = window
         self.__aggregation = aggregation
@@ -220,7 +222,7 @@ class QoSDriftMetric(QoSMetric):
 
 class DerivedQoSMetric(QoSMetric):
 
-    def __init__(self, name: str, description: str, metric_type: QoSMetricType, unit: QoSMetricUnit, uncertainty: float, window: int, aggregation: AggregationFunction, window_unit: WindowUnit, provider: "Provider"):
+    def __init__(self, name: str, description: str, metric_type: Type[QoSMetricType], unit: QoSMetricUnit, uncertainty: float, window: int, aggregation: AggregationFunction, window_unit: WindowUnit, provider: "Provider"):
         super().__init__(name, description, metric_type, unit, uncertainty, provider)
         self.__window = window
         self.__aggregation = aggregation

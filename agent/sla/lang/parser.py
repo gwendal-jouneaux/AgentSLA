@@ -33,7 +33,6 @@ def create_model(struct) -> SLA:
         for error in visitor.errors:
             print(str(error), file=sys.stderr)
     else:
-        print("Model parsed and validated")
         return sla
 
 
@@ -47,7 +46,10 @@ if __name__ == '__main__':
     sla = parse_file(args.path)
     if sla is None:
         sys.exit(1)
-
+    print("Model parsed and validated")
+    print()
+    print("Pretty printed version of the model:")
+    print()
     json_pp = SLAPrettyPrinter(sla).json()
     print(json_pp)
 

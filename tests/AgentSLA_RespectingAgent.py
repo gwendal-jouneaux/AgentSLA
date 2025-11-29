@@ -3,29 +3,28 @@ import asyncio
 from fastapi import FastAPI
 from hypercorn import Config
 from hypercorn.asyncio import serve
-# from starlette.requests import Request
 
 from agent.sla.framework.agent import AgentSLAInterface
+from agent.sla.lang.metamodel import QoSMetricType
+
 
 def acceptance(sla):
     return True
 
-interface = AgentSLAInterface(["AUC", "TTFT"], acceptance)
-interface.start()
+interface = AgentSLAInterface(["TTFT"], acceptance)
+interface.start(port=19121)
 
 app = FastAPI()
 @app.get("/action")
 def action():
-    # host = request.client.host
-    answer = "An action from agent 1"
-    print(answer)
+    answer = "An action from respecting agent"
+    interface.log_metric_value(QoSMetricType.TTFT,0.5)
     return answer
 
-@app.get("/summarize")
+@app.get("/respecting")
 def summary():
-    # host = request.client.host
-    answer = "A summary from agent 1"
-    print(answer)
+    answer = "Respecting agent specific task"
+    interface.log_metric_value(QoSMetricType.TTFT, 0.5)
     return answer
 
 config = Config()

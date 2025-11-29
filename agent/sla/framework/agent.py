@@ -1,22 +1,27 @@
 import asyncio
+import csv
 import json
 import time
+from collections.abc import Callable
 from threading import Thread
+from typing import Type
 
-from fastapi import FastAPI, Request
+from aenum import extend_enum
+
+from fastapi import FastAPI, Request, Body
 from hypercorn import Config
 from hypercorn.asyncio import serve
 
-from agent.sla.framework.sla_check import check_sla
-from agent.sla.lang.metamodel import QoSMetricType
-from agent.sla.lang.parser import parse_file
+from agent.sla.framework.sla_check import check_sla, UncertaintyMode
+from agent.sla.lang.metamodel import QoSMetricType, SLA
+from agent.sla.lang.parser import parse_str
+
 
 class Measurement:
-    def __init__(self, metric:QoSMetricType, value:float, client):
+    def __init__(self, metric:Type[QoSMetricType], value:float):
         self._timestamp = time.time()
         self._metric = metric
         self._value = value
-        self._client = client
 
 class Agreement:
     def __init__(self, sla, host, service_state):
@@ -49,7 +54,7 @@ class AgreementState(StateMachine):
             "Completed": {},
             "Terminated": {}
         }
-        super().__init__(transitions, "NotReady")
+        super().__init__(transitions, "Pending")
 
 class ServiceState(StateMachine):
     def __init__(self):
@@ -77,19 +82,28 @@ class AgentSLAInterface:
 
     def __new__(class_, *args, **kwargs):
         if not isinstance(class_._instance, class_):
-            class_._instance = object.__new__(class_)
             class_._needs_init = True
+            class_._instance = object.__new__(class_)
         return class_._instance
 
-    def __init__(self, metrics: list[QoSMetricType], agreement_acceptance):
+    def __init__(self, metrics: list[str], agreement_acceptance:Callable[[SLA],bool], metrics_extension:str = None):
         if not AgentSLAInterface._needs_init:
             return
         AgentSLAInterface._needs_init = False
         self.__agreement_acceptance = agreement_acceptance
-        self._metrics = metrics
+        self._metrics = [QoSMetricType[name] for name in metrics]
         self.__agreements = []
-        self._measurements = { metric:[] for metric in metrics }
+        self._measurements = { metric:[] for metric in self._metrics }
+        self._uncertainty_mode = UncertaintyMode.DEFAULT
         self._service_state = ServiceState()
+
+        if metrics_extension is not None:
+            with open(metrics_extension, newline='') as csvfile:
+                additional_metrics = csv.reader(csvfile)
+                for line in additional_metrics:
+                    metric = line[0]
+                    extend_enum(QoSMetricType, metric, metric)
+
         self.app = FastAPI()
         app = self.app
 
@@ -98,28 +112,35 @@ class AgentSLAInterface:
         def get_status():
             status = {
                 "state": self._service_state._state,
-                "metrics": self._metrics
+                "metrics": [metric.name for metric in self._metrics]
             }
             return json.dumps(status)
 
+        @app.post("/uncertainty/{mode}")
+        def set_uncertainty_mode(mode:str):
+            if mode in UncertaintyMode:
+                self._uncertainty_mode = UncertaintyMode[mode]
+
         @app.post("/agreements")
-        def create_agreement(json_sla, request: Request):
-            sla = parse_file(json_sla)
+        def create_agreement(request: Request, payload: dict = Body(...)):
+            sla = parse_str(payload["agreement"])
             accept = self.__agreement_acceptance(sla)
             if not accept:
-                return {
+                out = {
                     "agreement_state": "Rejected"
                 }
+                return json.dumps(out)
 
             agreement = Agreement(sla, request.client.host, self._service_state)
             agreement._agreement_state.Observed
             self.__agreements.append(agreement)
-            return {
+            out =  {
                 "id": len(self.__agreements) - 1,
                 "agreement_state": agreement._agreement_state._state,
                 "service_state": agreement._service_state._state,
                 "guarantee_state": agreement._guarantee_state._state
             }
+            return json.dumps(out)
 
         @app.get("/agreements/{id}/states")
         def get_states(id:int):
@@ -138,8 +159,8 @@ class AgentSLAInterface:
 
         self._service_state.Ready
 
-    def log_metric_value(self, metric, value):
-        self._measurements[metric].append(Measurement(metric, value, None))
+    def log_metric_value(self, metric:Type[QoSMetricType], value:float):
+        self._measurements[metric].append(Measurement(metric, value))
         self.check_agreements()
 
     def check_agreements(self):
@@ -147,7 +168,9 @@ class AgentSLAInterface:
             if agreement._agreement_state._state != "Observed":
                 continue
             sla = agreement._sla
-            check_sla(sla, self._measurements)
+            valid = check_sla(sla, self._measurements, self._uncertainty_mode)
+            if not valid:
+                agreement._guarantee_state.Violated
 
     def start(self, port:int = 19121):
         # Run new loop in thread

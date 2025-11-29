@@ -27,7 +27,7 @@
     }],
     "Provider": [{
       "name": "Provider name",
-      "confidence": 2,
-      "reputation": 0
+      "min_precision": 0.1,
+      "min_reputation": 0
     }]
 }

@@ -19,31 +19,10 @@ class SLAVisitor:
 
     def visit_SLA(self, struct):
 
-        # cards = struct.get("ModelCard")
-        # if cards is not None:
-        #     for card in cards:
-        #         mcard = ModelCard(card.get("name"), card.get("model_card"))
-        #         self.model_cards[card.get("name")] = mcard
-        #
-        # agents = struct.get("Agent")
-        # if agents is not None:
-        #     for agent in agents:
-        #         mc = None
-        #         if agent.get("ModelCard") is not None and agent.get("ModelCard") not in self.model_cards:
-        #             self.errors.append(UndefinedLabel(agent.get("ModelCard"), "ModelCard"))
-        #         else:
-        #             mc = self.model_cards[agent.get("ModelCard")]
-        #         ag = Agent(agent.get("description"), agent.get("url"), agent.get("name"), mc)
-        #         self.agents[agent.get("name")] = ag
-
         providers = struct.get("Provider")
         if providers is not None:
             for provider in providers:
-                if provider.get("confidence") > 1 or provider.get("confidence") < 0:
-                    self.errors.append(OutOfBound(str(provider.get("confidence"))))
-                    self.providers[provider.get("name")] = None
-                    continue
-                prov = Provider(provider.get("name"), provider.get("confidence"), provider.get("reputation"))
+                prov = Provider(provider.get("name"), provider.get("min_precision"), provider.get("min_reputation"))
                 self.providers[provider.get("name")] = prov
 
         metrics = struct.get("QoSMetric")
@@ -78,10 +57,6 @@ class SLAVisitor:
         scopes = struct.get("Scope")
         for scope in scopes:
             gt.scope.append(Scope(scope.get("name"), gt, scope.get("tasks", [])))
-            # if scope.get("Agent") not in self.agents:
-            #     self.errors.append(UndefinedLabel(scope.get("Agent"), "Agent"))
-            # else:
-            #     gt.scope.append(Scope(scope.get("name"), gt, self.agents[scope.get("Agent")]))
 
         conditions = struct.get("QualifyingCondition")
         if conditions is not None:

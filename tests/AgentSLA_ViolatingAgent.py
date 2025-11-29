@@ -5,24 +5,26 @@ from hypercorn import Config
 from hypercorn.asyncio import serve
 
 from agent.sla.framework.agent import AgentSLAInterface
+from agent.sla.lang.metamodel import QoSMetricType
+
 
 def acceptance(sla):
     return True
 
-interface = AgentSLAInterface(["AUC", "TTFT"], acceptance)
-interface.start()
+interface = AgentSLAInterface(["TTFT"], acceptance)
+interface.start(port=19122)
 
 app = FastAPI()
 @app.get("/action")
 def action():
-    answer = "An action from agent 2"
-    print(answer)
+    answer = "An action from violating agent"
+    interface.log_metric_value(QoSMetricType.TTFT,10)
     return answer
 
-@app.get("/classify")
-def classify():
-    answer = "A classification from agent 2"
-    print(answer)
+@app.get("/violating")
+def summary():
+    answer = "Violating agent specific task"
+    interface.log_metric_value(QoSMetricType.TTFT, 10)
     return answer
 
 config = Config()

@@ -1,0 +1,33 @@
+{
+    "GuaranteeTerm":[{
+        "Scope":[{
+            "name":"Scope name",
+            "tasks": ["respecting",
+                      "violating",
+                      "uncertain"]
+        }],
+        "QualifyingCondition":[],
+        "SLO":[{
+            "name": "SLO 1",
+            "BoolExpression": {
+                "type":"Comparison",
+                "QoSMetric": "TTFT",
+                "operator": "LESSEQ",
+                "value": 1.0
+            }
+        }]
+    }],
+    "QoSMetric":[{
+        "name": "TTFT",
+        "description": "description text",
+        "metric_type": "TTFT",
+        "unit": "SECONDS",
+        "uncertainty": 0.25,
+        "Provider": "Provider name"
+    }],
+    "Provider": [{
+      "name": "Provider name",
+      "min_precision": 0.01,
+      "min_reputation": 0
+    }]
+}

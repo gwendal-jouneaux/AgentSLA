@@ -1,18 +1,15 @@
+import csv
 import json
-from enum import Enum
-from os import stat_result
+from collections.abc import Callable
 
 import requests
+from aenum import extend_enum
 
 from agent.sla.framework.errors import NoValidAgentFound, NoReadyAgentFound, RefusedAgreement, AgentRefusedAgreement, \
     MetricNotAvailable
-from agent.sla.lang.metamodel import SLA, Comparison
+from agent.sla.framework.sla_check import UncertaintyMode
+from agent.sla.lang.metamodel import SLA, Comparison, QoSMetricType
 from agent.sla.lang.pretty_printer import SLAPrettyPrinter
-
-class UncertaintyMode(Enum):
-    DEFAULT = "DEFAULT"
-    STRICT = "STRICT"
-    RELAXED = "RELAXED"
 
 class TaskAction:
     def __init__(self, task, agent, fn):
@@ -38,13 +35,14 @@ class Agent:
 
     def propose(self, sla_json:str):
         agreements_url = self._url + "/agreements"
-        result = requests.post(agreements_url, json=sla_json)
-        return result.json()
+        payload = {"agreement": sla_json}
+        result = requests.post(agreements_url, json=payload)
+        return json.loads(result.json())
 
     def get_states(self, id:int):
         states_url = f"{self._url}/agreements/{id}/states"
-        result = requests.post(states_url)
-        return result.json()
+        result = requests.get(states_url)
+        return json.loads(result.json())
 
     def terminate(self, id:int):
         agreements_url = f"{self._url}/agreements/{id}"
@@ -62,7 +60,7 @@ class Agent:
                 tailored_sla = SLA(terms)
                 agreement = SLAPrettyPrinter(tailored_sla).json()
                 state = self.propose(agreement)
-                if state["ageement_state"] == "Rejected":
+                if state["agreement_state"] == "Rejected":
                     raise AgentRefusedAgreement(self)
                 result = function(*args, **kwargs)
                 states = self.get_states(state["id"])
@@ -113,9 +111,25 @@ class Agent:
 
 class AgentSLA:
     sla = None
+    order_taskactions = lambda x: list(x)
 
 def set_sla(sla):
     AgentSLA.sla = sla
+
+def set_uncertainty_mode(mode:UncertaintyMode):
+    for agent in Agent.agent_pool:
+        uncertainty_url = agent._url + f"/uncertainty/{mode.name}"
+        requests.post(uncertainty_url)
+
+def set_agent_preference(ordering_function:Callable[[set[TaskAction]], list[TaskAction]]):
+    AgentSLA.order_taskactions = ordering_function
+
+def extend_metrics(csv_path):
+    with open(csv_path, newline='') as csvfile:
+        additional_metrics = csv.reader(csvfile)
+        for line in additional_metrics:
+            metric = line[0]
+            extend_enum(QoSMetricType, metric, metric)
 
 def executeTask(task_name, *args, **kwargs):
     task_actions = Agent.task_actions[task_name] or set()
@@ -127,7 +141,8 @@ def executeTask(task_name, *args, **kwargs):
     actions_with_ready_agents = {action for action in actions_with_respecting_agent if action._agent._status["state"] not in {"NotReady", "Completed"}}
     if len(actions_with_ready_agents) == 0:
         raise NoReadyAgentFound(task_name)
-    for selected_action in actions_with_ready_agents:
+    sorted_actions = AgentSLA.order_taskactions(actions_with_ready_agents)
+    for selected_action in sorted_actions:
         try:
             result = selected_action._fn(*args, **kwargs)
             return result
